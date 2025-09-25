@@ -18,6 +18,16 @@ The project emphasizes **reproducibility**, **clarity**, and **visual intuition*
 
 ![image](./chap2-transform-density.png)
 
+- `sin_func_interpolation.jl` - A [Pluto.jl](https://plutojl.org/) notebook attempting to reproduce a **Tutorial Example** Section `1.2` from the book.
+![image](./sin-func-interpolation_demo.gif)
+
+- `probabilities-chap2.jl` - Also a Pluto notebook demonstrating how bias occurs when you calculate sample variance using the sample mean. It's discussed in Chapter 2, Section `2.3.3` **Bias of maximum likelihood**. As shown in the gif below, if the number of data points is low (equals 2) then the variance is off by a huge amount. But as number of data points increase, this effect is less probable. Mathematically:
+
+$$ E[\sigma^2_{ML}] = (\frac{N - 1}{N})\sigma^2 $$
+
+And to make the variance unbiased we use `1/(N-1)` instead of `1/N` and it's called **Bessel correction**.
+![image](./bessel_correction_demo.gif)
+
 ## License
 
 MIT License — free to use for educational purposes.

@@ -16,7 +16,7 @@ The project emphasizes **reproducibility**, **clarity**, and **visual intuition*
 
 - `Chap2-Transformation-Densities.ipynb` - Transformation of densities have interesting property where they're not quite the same as just regular functions (multiplied by the Jacobian).
 
-![image](./*.png)
+![image](./chap2-transform-density.png)
 
 ## License
 

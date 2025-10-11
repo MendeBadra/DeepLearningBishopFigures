@@ -1,20 +1,18 @@
 # DeepLearningBishopFigures
 
-This repository contains my self-driven project to study and reproduce key examples from **Christopher Bishop’s *Deep Learning Foundations and Concepts***. The goal is to deepen understanding of fundamental deep learning concepts by implementing them in Python/Jupyter notebooks and visualizing results.
+This repository contains my self-driven project to study and reproduce key examples from **Christopher Bishop’s *Deep Learning Foundations and Concepts***. You can find the book on [this](https://www.bishopbook.com/) website for free to read. The goal of this project is to deepen understanding of fundamental deep learning concepts by implementing them in Pluto.jl/Jupyter notebooks and visualize results for better intuition.
 
 ## Overview
 
 During this project, I focused on reproducing several core examples from Bishop’s book:
 
-* **Curve fitting**: Linear and nonlinear regression examples, exploring model complexity and overfitting.
-* **Polynomial interpolation**: Reproducing interpolation examples to understand basis functions and function approximation.
-* **Density transformations**: Visualizing probability density transformations to gain intuition on probabilistic modeling.
-
-The project emphasizes **reproducibility**, **clarity**, and **visual intuition**, rather than creating production-level code. Each notebook includes explanations, plots, and step-by-step derivations of the underlying mathematics.
+* **Polynomial regression example**: In the book's opening chapter, section `1.2` introduced a tutorial example which explains many basic concepts of machine learning intuitively. I had reproduced and confirmed the results that was shown in this section.
+* **Density transformations**: In the book's second chapter on probabilities, section `2.4` Transformation of Densities outlines the interesting properties of probability density functions (PDFs) under a nonlinear change of variable.
+* **Bias of maximum likelihood**: In the book's section `2.3.3` and `Figure 2.10` discusses how bias arises when using maximum likelihood to determine the mean and the variance of a Gaussian distribution. I found this section to be an excellent example to convert into `Pluto.jl` notebook, where interactivity of `Sliders` showcased intricate properties visually.
 
 ## Notebooks
 
-- `Chap2-Transformation-Densities.ipynb` - Transformation of densities have interesting property where they're not quite the same as just regular functions (multiplied by the Jacobian).
+- `Chap2-Transformation-Densities.ipynb` - PDF under a change of variable doesn't always transform as if it were just a function. Because transformed pdf must sum to one, the Jacobian of the transformation must be multiplied with transformed pdf. This example illustrates that mode (i.e maximum) of Gaussian pdf, denoted by $\hat{x}$ doesn't map to corresponding $\hat{y} = g^{-1}(\hat{x})$, where $g^{-1}$ denotes inverse nonlinear change of variable.
 
 ![image](./chap2-transform-density.png)
 
@@ -28,6 +26,9 @@ $$ E[\sigma^2_{ML}] = (\frac{N - 1}{N})\sigma^2 $$
 As you can see from the equation above, when N=2, then maximum likelihood variance is off from the real variance by a factor of 1/2! But as $N -> \infty$ then this effect is not noticable. And to make the variance unbiased we use `1/(N-1)` instead of `1/N` and it's called **Bessel correction**.
 ![image](./bessel_correction_demo.gif)
 
-## License
+## Setup and Running
+- For the `Pluto.jl` notebooks and installing, please visit excellent instructions on their [website](https://plutojl.org/#install).
+- For the Jupyter notebooks there are two options. If you want to open them in Colab, please remember to change the runtime to Julia.
+- Otherwise, to run Jupyter locally with Julia kernel, please visit the `IJulia` documentation [here](https://julialang.github.io/IJulia.jl/stable/manual/installation/).
 
-MIT License — free to use for educational purposes.
+

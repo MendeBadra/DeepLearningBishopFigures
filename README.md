@@ -13,6 +13,7 @@ During this project, I focused on reproducing several core examples from Bishopâ
 ## Notebooks
 
 - `Chap2-Transformation-Densities.ipynb` - PDF under a change of variable doesn't always transform as if it were just a function. Because transformed pdf must sum to one, the Jacobian of the transformation must be multiplied with transformed pdf. This example illustrates that mode (i.e maximum) of Gaussian pdf, denoted by $\hat{x}$ doesn't map to corresponding $\hat{y} = g^{-1}(\hat{x})$, where $g^{-1}$ denotes inverse nonlinear change of variable.
+  Please remember to changel kernel to `Julia` not `Julia1.11` [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://githubtocolab.com/MendeBadra/DeepLearningBishopFigures/blob/main/Chap2-Transformation-Densities.ipynb)
 
 ![image](./chap2-transform-density.png)
 

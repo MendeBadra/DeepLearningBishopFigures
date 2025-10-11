@@ -7,7 +7,7 @@ This repository contains my self-driven project to study and reproduce key examp
 During this project, I focused on reproducing several core examples from Bishop’s book:
 
 * **Curve fitting**: Linear and nonlinear regression examples, exploring model complexity and overfitting.
-* **Sinusoidal interpolation**: Reproducing interpolation examples to understand basis functions and function approximation.
+* **Polynomial interpolation**: Reproducing interpolation examples to understand basis functions and function approximation.
 * **Density transformations**: Visualizing probability density transformations to gain intuition on probabilistic modeling.
 
 The project emphasizes **reproducibility**, **clarity**, and **visual intuition**, rather than creating production-level code. Each notebook includes explanations, plots, and step-by-step derivations of the underlying mathematics.

@@ -17,7 +17,7 @@ During this project, I focused on reproducing several core examples from Bishopâ
 
 ![image](./chap2-transform-density.png)
 
-- `sin_func_interpolation.jl` - A [Pluto.jl](https://plutojl.org/) notebook attempting to reproduce a **Tutorial Example** Section `1.2` from the book.
+- `sin_func_interpolation.jl` - A Pluto.jl [notebook](https://pluto.land/n/jwg655nz) attempting to reproduce a **Tutorial Example** Section `1.2` from the book.
 ![image](./sin-func-interpolation_demo.gif)
 
 - `probabilities-chap2.jl` - Also a Pluto notebook demonstrating how bias occurs when you calculate sample variance using the sample mean. It's discussed in Chapter 2, Section `2.3.3` **Bias of maximum likelihood**. As shown in the gif below, if the number of data points is low (equals 2) then the variance is off by a huge amount. The blue bell shaped curve is quite narrow. But as number of data points increase, this effect is less pronounced. Mathematically:

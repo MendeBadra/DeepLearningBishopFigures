@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.13
+# v0.20.19
 
 using Markdown
 using InteractiveUtils
@@ -24,7 +24,8 @@ end
 
 # ╔═╡ 1e4d8fc4-9c9a-4685-8549-61bede61b9c6
 begin
-    using Plots, Polynomials, PlutoUI
+    using Plots, Polynomials, PlutoUI, LaTeXStrings
+	using LinearAlgebra
     # import PlotlyBase, PlotlyKaleido
 end
 
@@ -64,149 +65,29 @@ end
 md"""
 # Sin function interpolation (Polynomial fitting example)
 *Motivation: Deep learning Foundations and Concepts Chapter 1*
+
+So the motivating example from this book introduces a polynomial regression problem of fitting polynomial of degree $M$ to the dataset consisting of $N$ observations, such that $\mathcal{D} = {x_1, ... , x_N}$.
 """
+
+# ╔═╡ a5eacacf-e0d7-4a64-a22b-a58351cbe640
+# Library imports below are hidden
 
 # ╔═╡ a16ec8dc-a1ec-4306-aacd-cbf459c3cbbd
-gr()
-
-# ╔═╡ bbde3c70-4236-4c82-80f0-1b5381f0738e
-rand()
+gr();
 
 # ╔═╡ bcc21fa0-7a52-4f95-9b11-44bd1eb57852
-x = 0:0.01:1; # 100 points
+x = 0:0.01:1; # 100 data points
 
 # ╔═╡ 3b99d7a3-b0f7-43e5-b295-ea664f2f2098
-# Fixed out of sync issue
-y = sin.(2π * x);
+# Underlying distribution samples
+y = sin.(2π * x); 
 
-# ╔═╡ 868be20c-6117-4d18-9b02-14cf147353ea
-md"""
-Cell below are hidden:
-1. Documentation for `fit`
-2. Documentation for `polyfitA`
-"""
-
-# ╔═╡ 170c59b8-b87f-45d3-8cfb-4611df554d3d
-md"""
-# Documentation for `fit`
-    fit(x, y, deg=length(x) - 1; [weights], var=:x)
-    fit(::Type{<:AbstractPolynomial}, x, y, deg=length(x)-1; [weights], var=:x)
-
-Fit the given data as a polynomial type with the given degree. Uses
-linear least squares to minimize the norm  `||y - V⋅β||^2`, where `V` is
-the Vandermonde matrix and `β` are the coefficients of the polynomial
-fit.
-
-This will automatically scale your data to the [`domain`](@ref) of the
-polynomial type using [`mapdomain`](@ref). The default polynomial type
-is [`Polynomial`](@ref).
-
-
-## Weights
-
-Weights may be assigned to the points by specifying a vector or matrix of weights.
-
-When specified as a vector, `[w₁,…,wₙ]`, the weights should be
-non-negative as the minimization problem is `argmin_β Σᵢ wᵢ |yᵢ - Σⱼ
-Vᵢⱼ βⱼ|² = argmin_β || √(W)⋅(y - V(x)β)||²`, where, `W` the diagonal
-matrix formed from `[w₁,…,wₙ]`, is used for the solution, `V` being
-the Vandermonde matrix of `x` corresponding to the specified
-degree. This parameterization of the weights is different from that of
-`numpy.polyfit`, where the weights would be specified through
-`[ω₁,ω₂,…,ωₙ] = [√w₁, √w₂,…,√wₙ]`
-with the answer solving
-`argminᵦ | (ωᵢ⋅yᵢ- ΣⱼVᵢⱼ(ω⋅x) βⱼ) |^2`.
-
-When specified as a matrix, `W`, the solution is through the normal
-equations `(VᵀWV)β = (Vᵀy)`, again `V` being the Vandermonde matrix of
-`x` corresponding to the specified degree.
-
-(In statistics, the vector case corresponds to weighted least squares,
-where weights are typically given by `wᵢ = 1/σᵢ²`, the `σᵢ²` being the
-variance of the measurement; the matrix specification follows that of
-the generalized least squares estimator with `W = Σ⁻¹`, the inverse of
-the variance-covariance matrix.)
-
-## large degree
-
-For fitting with a large degree, the Vandermonde matrix is exponentially
-ill-conditioned. The `ArnoldiFit` type introduces an Arnoldi orthogonalization
-that fixes this problem.
-
-
-""";
-
-# ╔═╡ 837ca89a-7ebb-4ccf-9a05-bcc1fa5d3215
-## --------------------------------------------------
-## More accurate fitting for higher degree polynomials
-
-md"""
-# Documentation for [`polyfitA`](https://github.com/JuliaMath/Polynomials.jl/blob/master/src/polynomials/standard-basis/standard-basis.jl#L638C4-L697)
-    polyfitA(x, y, n=length(x)-1; var=:x)
-    fit(ArnoldiFit, x, y, n=length(x)-1; var=:x)
-
-Fit a degree ``n`` or less polynomial through the points ``(x_i, y_i)`` using Arnoldi orthogonalization of the Vandermonde matrix.
-
-The use of a Vandermonde matrix to fit a polynomial to data is exponentially ill-conditioned for larger values of ``n``. The Arnoldi orthogonalization fixes this problem.
-
-This representation is useful for *evaluating* the polynomial, but does not lend itself to other polynomial manipulations.
-
-# Returns
-
-Returns an instance of `ArnoldiFit`. This object can be used to evaluate the
-polynomial. To manipulate the polynomial, the object can be `convert`ed to other
-polynomial types, though there may be some loss in accuracy when doing
-polynomial evaluations afterwards for higher-degree polynomials.
-
-# Citations:
-
-The two main functions are translations from example code in:
-
-*VANDERMONDE WITH ARNOLDI*;
-PABLO D. BRUBECK, YUJI NAKATSUKASA, AND LLOYD N. TREFETHEN;
-[arXiv:1911.09988](https://people.maths.ox.ac.uk/trefethen/vander_revised.pdf)
-
-For more details, see also:
-
-Lei-Hong Zhang, Yangfeng Su, Ren-Cang Li. Accurate polynomial fitting and evaluation via Arnoldi. Numerical Algebra, Control and Optimization. doi: 10.3934/naco.2023002
-
-
-
-# Examples:
-
-```julia
-f(x) = 1/(1 + 25x^2)
-N = 80; xs = [cos(j*pi/N) for j in N:-1:0];
-p = fit(Polynomial, xs, f.(xs));
-q = fit(ArnoldiFit, xs, f.(xs));
-maximum(abs, p(x) - f(x) for x ∈ range(-1,stop=1,length=500)) # 3.304586010148457e16
-maximum(abs, q(x) - f(x) for x ∈ range(-1,stop=1,length=500)) # 1.1939520722092922e-7
-```
-
-```julia
-N = 250; xs = [cos(j*pi/N) for j in N:-1:0];
-p = fit(Polynomial, xs, f.(xs));
-q = fit(ArnoldiFit, xs, f.(xs));
-maximum(abs, p(x) - f(x) for x ∈ range(-1,stop=1,length=500)) # 3.55318186254542e92
-maximum(abs, q(x) - f(x) for x ∈ range(-1,stop=1,length=500)) # 8.881784197001252e-16
-```
-
-```julia
-p = fit(Polynomial, xs, f.(xs), 10); # least-squares fit
-q = fit(ArnoldiFit, xs, f.(xs), 10);
-maximum(abs, q(x) - p(x) for x ∈ range(-1,stop=1,length=500)) # 4.6775083806238626e-14
-Polynomials.norm(q-p, Inf) # 2.2168933355715126e-12 # promotes `q` to `Polynomial`
-```
-
-To manipulate the fitted polynomial, conversion is necessary. Conversion can lead to wildly divergent polynomials when n is large.
-
-""";
+# ╔═╡ 2ff4e294-65eb-4ee0-aaf3-951d0293857c
+# maybe plot this one:
+plot(x, y, title=L"$sin(x)$ function")
 
 # ╔═╡ 5b67c64f-15cc-412a-a5e4-6444d3844807
 md"How many points to take $N$ = $(@bind N Slider(10:2:100, show_value=true, default=10))"
-
-# ╔═╡ 4a03a76d-67a7-42dd-ae54-5b5fd39b6e10
-N
 
 # ╔═╡ 668cbf97-2ee4-4536-ba3f-ddb17c5a9ffb
 x_train = x[1]:1/(N-1):x[end] # Uniform distance away
@@ -225,8 +106,8 @@ md"**Total data points $N$ = $(length(t))**"
 
 # ╔═╡ 36aacf7a-7a4d-44df-a8ed-986b635af64f
 begin
-    plot(x, y, xlims=(0, 1.1), ylims=(-1.2, 1.2))
-    scatter!(x_train, t, title="sinx and some Gaussian noise")
+    p = plot(x, y, xlims=(0, 1.1), ylims=(-1.2, 1.2))
+    p = scatter(p, x_train, t, title=L"$sin(x)$ and some Gaussian noise")
 end
 
 # ╔═╡ ca40ae75-664e-48f6-8c67-6b63895730ed
@@ -239,34 +120,32 @@ Test for $M$ = $N$ = $N points
 f = fit(Polynomial, x_train, t)
 # f = fit(ArnoldiFit, x_train, t, n=N - 1; var=:x);
 
-# ╔═╡ 53444980-1b27-4ea7-8fad-f2f8aa9fac96
-begin
-    # plot(x, y, xlims=(0, 2π), ylims = (-1.2, 1.2))
-    # scatter!(x_train, t, title="sinx and some Gaussian noise")
-    # plot!(f, extrema(x)..., label="Interpolation")
-end
+# ╔═╡ 77a221c8-19ca-4177-b1df-58b50cfb5711
+# begin
+# 	ENV["JULIA_EDITOR"] = "code"
+# 	@edit fit(Polynomial, x_train, t)
+# end
 
 # ╔═╡ 1c4d52ad-f2ac-45c6-93d4-cd2b451513a6
 M_range = 0:18
 
 # ╔═╡ 2ba56c2a-aeef-46c3-a296-31100951d316
+"""The RMS error between y(w, x) and t target variable"""
 function error_rms(w::Vector, x::AbstractVector, t::Vector)
     # @assert length(w) < M_range[end] "length of w vector($(length(w))) exceeds the polynomial amount $(M_range[end])"
     @assert length(x) == length(t)
     y = Polynomial(w)
-    dummy = y.(x) .- t
-    return sqrt(1 / N * (dummy' * dummy))
-end
+    diff = y.(x) .- t
+    return sqrt(1 / N * (diff' * diff))
+end;
 
 # ╔═╡ d71f4b77-cbc8-4b42-80a8-3f00690893dd
 md"
-Degree of freedom for polynomial $M$: $(@bind M Slider(M_range, show_value=true, default=(N > 3) ? 3 : 0))
+Degree of freedom for polynomial $M$: $(@bind M Slider(M_range, show_value=true, default=(N > 3) ? 9 : 0))
 "
 
 # ╔═╡ 557518ab-5104-416b-986d-27c68e1ff043
 begin
-    # f_degree = fit(ArnoldiFit, x_train, t, M)
-    # f_poly = convert(Polynomial, f_degree)
     f_poly = fit(Polynomial, x_train, t, M)
 end
 
@@ -275,9 +154,9 @@ w_poly = f_poly.coeffs
 
 # ╔═╡ 8fd2fc65-5c49-4c70-8278-55882979dc2a
 begin
-    plot(x, y, xlims=(0, 1.1))
-    scatter!(x_train, t, title="sinx and some Gaussian noise")
-    plot!(f_poly, extrema(x_train)..., label="$M degree fit")
+    p_1 = plot(x, y, xlims=(0, 1.1))
+    base_plot = scatter(p_1, x_train, t, title="sinx and some Gaussian noise")
+    base_plot = plot(base_plot, f_poly, extrema(x_train)..., label="$M degree fit")
 end
 
 # ╔═╡ 7e4766a7-b6db-4632-b584-992cd43b9d59
@@ -300,9 +179,6 @@ $E_{\text{RMS}} = \sqrt{\frac{1}{N} \sum_{n=1}^{N} \{ y(x_n, \mathbf{w}) - t_n \
 # ╔═╡ d058f1e2-c781-4430-9b97-552827f1409a
 (f_poly.(x_train) - t)' * (f_poly.(x_train) - t)
 
-# ╔═╡ 29d1efd0-5a1e-4fe6-9bce-ea68a3fe2e3a
-@which fit
-
 # ╔═╡ d6899aff-0c1b-4a0e-9039-22c2076c37b1
 begin
     # Generate test data from sinx function
@@ -319,12 +195,11 @@ begin
 end
 
 # ╔═╡ 948cd614-e9e6-4dcf-ac2d-5444ab646022
-begin
-    function error_rms(y::Vector, t::Vector)
-        @assert length(y - t) == N || length(y - t) == N_test
-        return √(1 / (length(y - t)) * (y - t)' * (y - t))
-    end
-end
+"""calculate RMS error between two vectors"""
+function error_rms(y::Vector, t::Vector)
+	@assert length(y - t) == N || length(y - t) == N_test
+	return √(1 / (length(y - t)) * (y - t)' * (y - t))
+end;
 
 # ╔═╡ c1fcb1f2-3b3c-4527-9f61-4b9f82ff030c
 # New error_rms can live alongside another error_rms thanks to multiple dispatch.
@@ -361,11 +236,11 @@ using LaTeXStrings
   ╠═╡ =#
 
 # ╔═╡ 05deca4a-c891-435c-a1f1-5cf8e4a71438
-begin #ChatGPT assistance
+begin
     # Plot
     plot(M_range, training_errors,
         lw=2, label="Training",
-        marker=:o, color=:red)
+        marker=:o, color=:red, xlims=(0,N+2), ylims=(0., 1.))
 
     plot!(M_range, test_errors,
         lw=2, label="Test",
@@ -373,8 +248,8 @@ begin #ChatGPT assistance
         marker=:o, color=:blue)
 
     # Axis labels and title
-    xlabel!("Model Complexity")
-    ylabel!("E_{RMS}")
+    xlabel!(L"$M$ - model complexity")
+    ylabel!(L"E_{RMS}")
     title!("Training vs Test Error")
 
     # Customize the legend
@@ -383,10 +258,9 @@ end
 
 # ╔═╡ 1cfff5d7-9bc5-4195-97d7-79dd67bd6733
 md"""
-**Quote:**
+**Quote (Bishop 2024):**
 This may seem paradoxical because a polynomial of a given order contains all
-lower-order polynomials as special cases. The $M = 9$ polynomial is therefore ca-
-pable of generating results at least as good as the $M = 3$ polynomial. Furthermore,
+lower-order polynomials as special cases. The $M = 9$ polynomial is therefore capable of generating results at least as good as the $M = 3$ polynomial. Furthermore,
 we might suppose that the best predictor of new data would be the function $sin(2πx)$
 from which the data was generated (and we will see later that this is indeed the case).
 We know that a power series expansion of the function $sin(2πx)$ contains terms of all
@@ -395,7 +269,7 @@ $M$.
 """
 
 # ╔═╡ fe324b38-0f97-44ee-b621-fa92f0f734bd
-begin
+let
     df = DataFrame(W=[M_range;])
     for M in M_range
         # Fit the polynomial of degree M
@@ -412,23 +286,10 @@ begin
     df
 end
 
-# ╔═╡ 33e6e31f-6692-410c-8609-2b109a7e06af
-begin
-    # Access internal fields of the DataFrame `df`
-    columns = getfield(df, :columns)
-    colindex = getfield(df, :colindex)
-    metadata = getfield(df, :metadata)
-    colmetadata = getfield(df, :colmetadata)
-    allnotemetadata = getfield(df, :allnotemetadata)
-
-    # Displaying the internal fields
-    # println("Columns: $columns")
-    println("Column Index: $colindex")
-    println("Metadata: $metadata")
-    println("Column Metadata: $colmetadata")
-    println("All Note Metadata: $allnotemetadata")
-
-end
+# ╔═╡ c4d82cc7-a7bb-4e32-a8cc-c63818dfb0a6
+md"""
+As you can see on the above table, our polynomial coefficients are becoming more and more varied as M increases.
+"""
 
 # ╔═╡ 99b67edf-4470-4161-b216-23b44f89fcb1
 md"""
@@ -465,10 +326,67 @@ function error_rms_regularized(y::Vector, t::Vector, w::Vector, λ)
     return √(1 / N_local * ((y - t)' * (y - t) + λ / N_local * w'w))
 end
 
+# ╔═╡ 674f24f9-fe36-432b-ba7d-3c84beb0587a
+md"""
+So far, we've used `Polynomials.jl`'s `fit` method, which assumes us the least squares criterion. But since we modified this criterion with a regularizer, we need to implement polynomial regression.
+"""
+
+# ╔═╡ 00bda59e-151f-4da3-9e09-6a99921751b9
+let # for testing
+	V = vander(Polynomial, x_train, M)
+	@show ws = V\t
+	isequal(ws, w_poly)
+end
+
+# ╔═╡ 467c98d8-cf94-4e44-8944-c687bae9d1a4
+begin
+	# Ok it was promising. Now let's define
+	λ = exp(-10) # from bishop book
+	V = vander(Polynomial, x_train, M)
+	Λ = fill!(similar(V), 0)
+	Λ[diagind(Λ)] .= λ
+	regularized_ws = (V .+ Λ)\t  
+	# Turns out regularization wasn't that hard after all!
+end
+
+# ╔═╡ e54120fa-ed6b-484d-86d1-a4f09256266a
+begin
+	# Let's construct a polynomial from this regularized_ws
+	regularized_poly = Polynomial(regularized_ws)
+	plot(base_plot, regularized_poly, extrema(x_train)..., label="$M deg. reg. fit")
+end
+
+# ╔═╡ c0a28e40-40ce-4b73-b332-4e620ba5eece
+# ╠═╡ disabled = true
+#=╠═╡
+df = DataFrame(w_poly = w_poly, reg_w = regularized_ws)
+  ╠═╡ =#
+
+# ╔═╡ 33e6e31f-6692-410c-8609-2b109a7e06af
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+    # Access internal fields of the DataFrame `df`
+    columns = getfield(df, :columns)
+    colindex = getfield(df, :colindex)
+    metadata = getfield(df, :metadata)
+    colmetadata = getfield(df, :colmetadata)
+    allnotemetadata = getfield(df, :allnotemetadata)
+
+    # Displaying the internal fields
+    # println("Columns: $columns")
+    # println("Column Index: $colindex")
+    # println("Metadata: $metadata")
+    # println("Column Metadata: $colmetadata")
+    # println("All Note Metadata: $allnotemetadata")
+
+end;
+  ╠═╡ =#
+
 # ╔═╡ ccaacce9-8277-43f1-8d00-ec6d4b7fa0c8
 md"""
-# Chapter2: Probabilities
-""";
+# Chapter2: Probabilities [NOT COMPLETE]
+"""
 
 # ╔═╡ 687a76a1-6ab5-42f7-967c-606bf008e1f4
 md"""
@@ -561,18 +479,15 @@ end
 
 # ╔═╡ Cell order:
 # ╟─e0884827-602a-4cd6-87ca-04b0999800de
-# ╠═f2f3493b-4105-4927-ad32-7e5d442d4b17
+# ╟─a5eacacf-e0d7-4a64-a22b-a58351cbe640
+# ╟─f2f3493b-4105-4927-ad32-7e5d442d4b17
 # ╠═1e4d8fc4-9c9a-4685-8549-61bede61b9c6
-# ╠═a16ec8dc-a1ec-4306-aacd-cbf459c3cbbd
-# ╠═4a03a76d-67a7-42dd-ae54-5b5fd39b6e10
 # ╠═e5b2fa05-c958-4b7f-b1cc-bee364219c46
-# ╠═bbde3c70-4236-4c82-80f0-1b5381f0738e
+# ╟─a16ec8dc-a1ec-4306-aacd-cbf459c3cbbd
 # ╠═bcc21fa0-7a52-4f95-9b11-44bd1eb57852
 # ╠═3b99d7a3-b0f7-43e5-b295-ea664f2f2098
+# ╟─2ff4e294-65eb-4ee0-aaf3-951d0293857c
 # ╟─466f7980-7842-4abd-bf2e-50d74e19796c
-# ╟─868be20c-6117-4d18-9b02-14cf147353ea
-# ╟─170c59b8-b87f-45d3-8cfb-4611df554d3d
-# ╟─837ca89a-7ebb-4ccf-9a05-bcc1fa5d3215
 # ╠═668cbf97-2ee4-4536-ba3f-ddb17c5a9ffb
 # ╠═d90d9aa3-eb2d-4d9a-8d51-9b943ca0595d
 # ╠═90ed8f96-41e2-405a-9ac7-b5adb0753544
@@ -580,7 +495,7 @@ end
 # ╠═36aacf7a-7a4d-44df-a8ed-986b635af64f
 # ╟─ca40ae75-664e-48f6-8c67-6b63895730ed
 # ╠═de1c70c6-96c8-442a-9e89-65abef0e6583
-# ╠═53444980-1b27-4ea7-8fad-f2f8aa9fac96
+# ╠═77a221c8-19ca-4177-b1df-58b50cfb5711
 # ╠═1c4d52ad-f2ac-45c6-93d4-cd2b451513a6
 # ╠═557518ab-5104-416b-986d-27c68e1ff043
 # ╠═d3c0b19f-e5f2-4862-a53b-b59f61c43637
@@ -594,7 +509,6 @@ end
 # ╠═948cd614-e9e6-4dcf-ac2d-5444ab646022
 # ╠═2f101741-63db-47cc-815e-0de4169842c1
 # ╠═d058f1e2-c781-4430-9b97-552827f1409a
-# ╠═29d1efd0-5a1e-4fe6-9bce-ea68a3fe2e3a
 # ╠═657cea90-c746-46ea-9afd-ea5bc8feceb5
 # ╠═b54bb9fd-d423-446a-8474-230919d81e52
 # ╠═d6899aff-0c1b-4a0e-9039-22c2076c37b1
@@ -602,12 +516,18 @@ end
 # ╠═90daedc0-eee7-4df0-8e4b-68163ad39d33
 # ╠═05deca4a-c891-435c-a1f1-5cf8e4a71438
 # ╟─1cfff5d7-9bc5-4195-97d7-79dd67bd6733
-# ╠═fe324b38-0f97-44ee-b621-fa92f0f734bd
+# ╟─fe324b38-0f97-44ee-b621-fa92f0f734bd
+# ╟─c4d82cc7-a7bb-4e32-a8cc-c63818dfb0a6
 # ╠═33e6e31f-6692-410c-8609-2b109a7e06af
-# ╠═99b67edf-4470-4161-b216-23b44f89fcb1
+# ╟─99b67edf-4470-4161-b216-23b44f89fcb1
 # ╟─d87194b3-664a-47ca-ab72-ecd029296fe0
 # ╟─2159e520-9eac-4e76-8a1b-75cc26f86ea8
 # ╠═593a8bd7-2886-460f-8867-2ac6467a5cc6
+# ╟─674f24f9-fe36-432b-ba7d-3c84beb0587a
+# ╠═00bda59e-151f-4da3-9e09-6a99921751b9
+# ╠═467c98d8-cf94-4e44-8944-c687bae9d1a4
+# ╠═e54120fa-ed6b-484d-86d1-a4f09256266a
+# ╠═c0a28e40-40ce-4b73-b332-4e620ba5eece
 # ╟─ccaacce9-8277-43f1-8d00-ec6d4b7fa0c8
 # ╟─687a76a1-6ab5-42f7-967c-606bf008e1f4
 # ╠═5454f7bd-a0f5-4342-b452-554090aee17e

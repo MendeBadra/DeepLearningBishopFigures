@@ -1,5 +1,5 @@
 # DeepLearningBishopFigures
-
+[**Update:** I posted a blog post of the Pluto.jl notebook [here](https://mendebadra.github.io/posts/sin-function-interpolation-bishop/sin-function-interpolation-bishop.html)]
 This repository contains my self-driven project to study and reproduce key examples from **Christopher Bishop’s *Deep Learning Foundations and Concepts***. You can find the book on [this](https://www.bishopbook.com/) website for free to read. The goal of this project is to deepen understanding of fundamental deep learning concepts by implementing them in Pluto.jl/Jupyter notebooks and visualize results for better intuition.
 
 ## Overview
